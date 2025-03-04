@@ -10,13 +10,13 @@ app = FastAPI()
 class TranscribeYoutubeRequest(BaseModel):
   video_id: str
 
-@app.post("/transcribe_youtube")
+@app.post("/api/transcribe_youtube")
 async def transcribe_youtube(request: TranscribeYoutubeRequest):
   transcript_list = YouTubeTranscriptApi.get_transcript(request.video_id)
   transcript = " ".join([t["text"] for t in transcript_list])
   return transcript
 
-@app.post("/extract_ingredients")
+@app.post("/api/extract_ingredients")
 async def extract_ingredients(request: TranscribeYoutubeRequest):
   
   transcript_list = YouTubeTranscriptApi.get_transcript(request.video_id)
