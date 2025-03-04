@@ -14,8 +14,8 @@ For local tests:
 
 ``` bash
 # curl -X POST -H "Content-Type: application/json" -d '{"youtube_url": "https://www.youtube.com/watch?v=EvE5cYNXufY"}' http://localhost:8000/transcribe_youtube
-curl -X POST -H "Content-Type: application/json" -d '{"video_id": "EvE5cYNXufY"}' http://localhost:8000/transcribe_youtube
-curl -X POST -H "Content-Type: application/json" -d '{"video_id": "mmzoO7e4j-8"}' http://localhost:8000/extract_ingredients
+curl -X POST -H "Content-Type: application/json" -d '{"video_id": "EvE5cYNXufY"}' http://localhost:8000/api/transcribe_youtube
+curl -X POST -H "Content-Type: application/json" -d '{"video_id": "mmzoO7e4j-8"}' http://localhost:8000/api/extract_ingredients
 ```
 
 For production environment:
