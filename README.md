@@ -18,6 +18,12 @@ curl -X POST -H "Content-Type: application/json" -d '{"video_id": "EvE5cYNXufY"}
 curl -X POST -H "Content-Type: application/json" -d '{"video_id": "mmzoO7e4j-8"}' http://localhost:8000/api/extract_ingredients
 ```
 
+For local tests of vercel environment:
+
+``` bash
+vercel dev
+```~~~~
+
 For production environment:
 
 ``` bash

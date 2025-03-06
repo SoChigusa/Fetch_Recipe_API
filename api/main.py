@@ -1,52 +1,67 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from flask import Flask, request, jsonify
 from youtube_transcript_api import YouTubeTranscriptApi
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
-app = FastAPI()
+load_dotenv('.env.local')
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY)
 
-class TranscribeYoutubeRequest(BaseModel):
-  video_id: str
+app = Flask(__name__)
 
-@app.post("/api/transcribe_youtube")
-async def transcribe_youtube(request: TranscribeYoutubeRequest):
-  transcript_list = YouTubeTranscriptApi.get_transcript(request.video_id)
-  transcript = " ".join([t["text"] for t in transcript_list])
-  return transcript
+@app.route("/api/transcribe_youtube", methods=["POST"])
+def transcribe_youtube():
+    data = request.get_json()
+    if not data or "video_id" not in data:
+        return jsonify({"error": "video_id is required"}), 400
 
-@app.post("/api/extract_ingredients")
-async def extract_ingredients(request: TranscribeYoutubeRequest):
-  
-  transcript_list = YouTubeTranscriptApi.get_transcript(request.video_id)
-  recipe_text = " ".join([t["text"] for t in transcript_list])
+    video_id = data["video_id"]
+    try:
+        transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+        transcript = " ".join([t["text"] for t in transcript_list])
+        return jsonify({"transcript": transcript})
+    except Exception as e:
+        return jsonify({"error": f"Transcript retrieval failed: {str(e)}"}), 500
 
-  load_dotenv('.env.local')
-  OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-  if not OPENAI_API_KEY:
-    raise Exception("OPENAI_API_KEY environment variable is not set")
+@app.route("/api/extract_ingredients", methods=["POST"])
+def extract_ingredients():
+    data = request.get_json()
+    if not data or "video_id" not in data:
+        return jsonify({"error": "video_id is required"}), 400
 
-  # ① OpenAIのAPIキーを設定
-  client = OpenAI(api_key=OPENAI_API_KEY)
+    video_id = data["video_id"]
+    try:
+        transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+        recipe_text = " ".join([t["text"] for t in transcript_list])
+    except Exception as e:
+        return jsonify({"error": f"Transcript retrieval failed: {str(e)}"}), 500
 
-  # ③ ChatGPTに対してどんな役割でどう応答してほしいか、システムメッセージで指定
-  system_message = {
-      "role": "system",
-      "content": "あなたは優秀なレシピ解析アシスタントです。ユーザーの投稿したレシピテキストから、使用されている食材とおおよその分量（または目安）を抽出し、日本語で一覧にしてください。"
-  }
+    # .env.local から環境変数を読み込む
+    load_dotenv('.env.local')
+    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+    if not OPENAI_API_KEY:
+        return jsonify({"error": "OPENAI_API_KEY environment variable is not set"}), 500
 
-  # ④ ユーザーメッセージとしてレシピを入力
-  user_message = {
-      "role": "user",
-      "content": recipe_text
-  }
 
-  # ⑤ ChatCompletion APIを呼び出し
-  response = client.chat.completions.create(model="gpt-3.5-turbo",  # GPT-4にする場合は "gpt-4"
-  messages=[system_message, user_message],
-  temperature=0.5)
+    # ChatGPT へのシステム・ユーザーメッセージの定義
+    system_message = {
+        "role": "system",
+        "content": "あなたは優秀なレシピ解析アシスタントです。ユーザーの投稿したレシピテキストから、使用されている食材とおおよその分量（または目安）を抽出し、日本語で一覧にしてください。"
+    }
+    user_message = {
+        "role": "user",
+        "content": recipe_text
+    }
 
-  # ⑥ 応答の取り出し
-  assistant_message = response.choices[0].message.content
-  return assistant_message
+    try:
+        response = client.chat.completions.create(model="gpt-3.5-turbo",
+        messages=[system_message, user_message],
+        temperature=0.5)
+        assistant_message = response.choices[0].message.content
+        return jsonify({"ingredients": assistant_message})
+    except Exception as e:
+        return jsonify({"error": f"OpenAI API call failed: {str(e)}"}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True)
