@@ -51,7 +51,16 @@ def extract_ingredients():
     # ChatGPT へのシステム・ユーザーメッセージの定義
     system_message = {
         "role": "system",
-        "content": "あなたは優秀なレシピ解析アシスタントです。ユーザーの投稿したレシピテキストから、使用されている食材とおおよその分量（または目安）を抽出し、日本語で一覧にしてください。"
+        "content": "You are a recipe analysis assistant. When given a recipe text, extract all the ingredients and their corresponding quantities. Your output must be in English and strictly follow the JSON format below:\n"
+        "["
+        "    {"
+        "        \"ingredient\": <ingredient name>,"
+        "        \"quantity\": <quantity>"
+        "    },"
+        "..."
+        "]"
+        "\n\n"
+        "Return only the JSON list; do not include any additional commentary or text."
     }
     user_message = {
         "role": "user",
