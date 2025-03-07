@@ -10,6 +10,10 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 app = Flask(__name__)
 
+@app.route('/_ah/health')
+def health_check():
+    return 'OK', 200
+
 @app.route("/api/transcribe_youtube", methods=["POST"])
 def transcribe_youtube():
     data = request.get_json()

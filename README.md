@@ -4,8 +4,14 @@
 
 ``` bash
 source venv/bin/activate
-uvicorn main:app --reload
-curl http://127.0.0.1:8000/
+gunicorn -b :3000 main:app
+```
+
+## commands for deploy
+
+``` bash
+gcloud app deploy
+gcloud app browse
 ```
 
 ### POST command
@@ -13,19 +19,13 @@ curl http://127.0.0.1:8000/
 For local tests:
 
 ``` bash
-# curl -X POST -H "Content-Type: application/json" -d '{"youtube_url": "https://www.youtube.com/watch?v=EvE5cYNXufY"}' http://localhost:8000/transcribe_youtube
-curl -X POST -H "Content-Type: application/json" -d '{"video_id": "EvE5cYNXufY"}' http://localhost:8000/api/transcribe_youtube
-curl -X POST -H "Content-Type: application/json" -d '{"video_id": "mmzoO7e4j-8"}' http://localhost:8000/api/extract_ingredients
+curl -X POST -H "Content-Type: application/json" -d '{"video_id": "EvE5cYNXufY"}' http://localhost:3000/api/transcribe_youtube
+curl -X POST -H "Content-Type: application/json" -d '{"video_id": "mmzoO7e4j-8"}' http://localhost:3000/api/extract_ingredients
 ```
-
-For local tests of vercel environment:
-
-``` bash
-vercel dev
-```~~~~
 
 For production environment:
 
 ``` bash
-curl -X POST -H "Content-Type: application/json" -d '{"video_id": "mmzoO7e4j-8"}' https://fetch-recipe-api.vercel.app/api/transcribe_youtube
+curl -X POST -H "Content-Type: application/json" -d '{"video_id": "EvE5cYNXufY"}' https://fetch-recipe-api.uk.r.appspot.com/api/transcribe_youtube
+curl -X POST -H "Content-Type: application/json" -d '{"video_id": "mmzoO7e4j-8"}' https://fetch-recipe-api.uk.r.appspot.com/api/extract_ingredients
 ```
